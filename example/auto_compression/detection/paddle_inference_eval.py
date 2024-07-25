@@ -243,9 +243,13 @@ def load_predictor(
         raise ValueError(
             "Predict by TensorRT mode: {}, expect device=='GPU', but device == {}".
             format(precision, device))
-    config = Config(
+    # support paddle 2.x
+    if '2' in paddle.__version__.split('.')[0]:
+        config = Config(
         os.path.join(model_dir, "model.pdmodel"),
         os.path.join(model_dir, "model.pdiparams"))
+    else:
+        config = Config(os.path.join(model_dir, "model"))
 
     config.enable_memory_optim()
     if device == "GPU":

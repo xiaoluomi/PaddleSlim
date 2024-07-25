@@ -113,9 +113,14 @@ class Predictor(object):
 
     def _create_paddle_predictor(self):
         inference_model_dir = args.model_path
-        model_file = os.path.join(inference_model_dir, args.model_filename)
-        params_file = os.path.join(inference_model_dir, args.params_filename)
-        config = paddle.inference.Config(model_file, params_file)
+        if '2' in paddle.__version__.split('.')[0]:
+            config = paddle.inference.Config(
+            os.path.join(inference_model_dir, args.model_filename),
+            os.path.join(inference_model_dir, args.params_filename))
+        else:
+            model_prefix = args.model_filename.split('.')[0]
+            config = paddle.inference.Config(os.path.join(inference_model_dir, model_prefix))
+        
         precision = paddle.inference.Config.Precision.Float32
         if args.use_int8:
             precision = paddle.inference.Config.Precision.Int8
