@@ -44,9 +44,13 @@ def load_predictor(args):
     load predictor func
     """
     rerun_flag = False
-    model_file = os.path.join(args.model_path, args.model_filename)
-    params_file = os.path.join(args.model_path, args.params_filename)
-    pred_cfg = PredictConfig(model_file, params_file)
+    if '2' in paddle.__version__.split('.')[0]:
+        pred_cfg = PredictConfig(
+        os.path.join(args.model_path, args.model_filename),
+        os.path.join(args.model_path, args.params_filename))
+    else:
+        model_prefix = args.model_filename.split(".")[0]
+        pred_cfg = PredictConfig(os.path.join(args.model_path, model_prefix))
     pred_cfg.enable_memory_optim()
     pred_cfg.switch_ir_optim(True)
     if args.device == "GPU":

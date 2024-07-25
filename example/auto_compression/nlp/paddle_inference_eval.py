@@ -207,9 +207,13 @@ class Predictor(object):
         create_predictor func
         """
         cls.rerun_flag = False
-        config = paddle.inference.Config(
-            os.path.join(args.model_path, args.model_filename),
-            os.path.join(args.model_path, args.params_filename))
+        if '2' in paddle.__version__.split('.')[0]:
+            config = paddle.inference.Config(
+                os.path.join(args.model_path, args.model_filename),
+                os.path.join(args.model_path, args.params_filename))
+        else:
+            model_prefix=args.model_filename.split('.')[0]
+            config = paddle.inference.Config(os.path.join(args.model_path, model_prefix))
         config.switch_ir_debug(True)
         # 适用于ERNIE 3.0-Medium模型
         # config.exp_disable_tensorrt_ops(["elementwise_add"])

@@ -18,9 +18,13 @@ import imagenet_dataset as dataset
 
 def eval(args):
     # create predictor
-    model_file = os.path.join(args.model_path, args.model_filename)
-    params_file = os.path.join(args.model_path, args.params_filename)
-    config = paddle_infer.Config(model_file, params_file)
+    if '2' in paddle.__version__.split('.')[0]:
+        config = paddle.inference.Config(
+            os.path.join(args.model_path, args.model_filename),
+            os.path.join(args.model_path, args.params_filename))
+    else:
+        model_prefix = args.model_filename.split('.')[0]
+        config = paddle.inference.Config(os.path.join(args.model_path, model_prefix))
     if args.use_gpu:
         config.enable_use_gpu(1000, 0)
     if not args.ir_optim:
