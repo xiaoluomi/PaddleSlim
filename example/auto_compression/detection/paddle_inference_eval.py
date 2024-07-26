@@ -65,8 +65,7 @@ def argsparser():
         "--device",
         type=str,
         default="GPU",
-        help=
-        "Choose the device you want to run, it can be: CPU/GPU/XPU, default is GPU",
+        help="Choose the device you want to run, it can be: CPU/GPU/XPU, default is GPU",
     )
     parser.add_argument(
         "--use_dynamic_shape",
@@ -243,9 +242,13 @@ def load_predictor(
         raise ValueError(
             "Predict by TensorRT mode: {}, expect device=='GPU', but device == {}".
             format(precision, device))
-    config = Config(
-        os.path.join(model_dir, "model.pdmodel"),
-        os.path.join(model_dir, "model.pdiparams"))
+    # support paddle 2.x
+    if '2' in paddle.__version__.split('.')[0]:
+        config = Config(
+            os.path.join(model_dir, "model.pdmodel"),
+            os.path.join(model_dir, "model.pdiparams"))
+    else:
+        config = Config(os.path.join(model_dir, "model"))
 
     config.enable_memory_optim()
     if device == "GPU":
@@ -281,8 +284,8 @@ def load_predictor(
             dynamic_shape_file = os.path.join(FLAGS.model_path,
                                               "dynamic_shape.txt")
             if os.path.exists(dynamic_shape_file):
-                config.enable_tuned_tensorrt_dynamic_shape(
-                    dynamic_shape_file, True)
+                config.enable_tuned_tensorrt_dynamic_shape(dynamic_shape_file,
+                                                           True)
                 print("trt set dynamic shape done!")
             else:
                 config.collect_shape_range_info(dynamic_shape_file)
@@ -434,10 +437,9 @@ def main():
         reader_cfg = load_config(FLAGS.reader_config)
         dataset = reader_cfg["EvalDataset"]
         global val_loader
-        val_loader = create("EvalReader")(
-            reader_cfg["EvalDataset"],
-            reader_cfg["worker_num"],
-            return_list=True)
+        val_loader = create("EvalReader")(reader_cfg["EvalDataset"],
+                                          reader_cfg["worker_num"],
+                                          return_list=True)
         clsid2catid = {v: k for k, v in dataset.catid2clsid.items()}
         anno_file = dataset.get_anno()
         metric = COCOMetric(

@@ -91,8 +91,7 @@ def parse_args():
         "--max_seq_length",
         default=128,
         type=int,
-        help=
-        "The maximum total input sequence length after tokenization. Sequences longer "
+        help="The maximum total input sequence length after tokenization. Sequences longer "
         "than this will be truncated, sequences shorter will be padded.", )
     parser.add_argument(
         "--perf_warmup_steps",
@@ -108,8 +107,7 @@ def parse_args():
         type=str,
         default="fp32",
         choices=["fp32", "fp16", "int8"],
-        help=
-        "The precision of inference. It can be 'fp32', 'fp16' or 'int8'. Default is 'fp16'.",
+        help="The precision of inference. It can be 'fp32', 'fp16' or 'int8'. Default is 'fp16'.",
     )
     parser.add_argument(
         "--use_mkldnn",
@@ -158,7 +156,8 @@ def _convert_example(example,
             }
         elif "target" in example:  # wsc
             text, query, pronoun, query_idx, pronoun_idx = (
-                example["text"], example["target"]["span1_text"],
+                example["text"],
+                example["target"]["span1_text"],
                 example["target"]["span2_text"],
                 example["target"]["span1_index"],
                 example["target"]["span2_index"], )
@@ -207,9 +206,14 @@ class Predictor(object):
         create_predictor func
         """
         cls.rerun_flag = False
-        config = paddle.inference.Config(
-            os.path.join(args.model_path, args.model_filename),
-            os.path.join(args.model_path, args.params_filename))
+        if '2' in paddle.__version__.split('.')[0]:
+            config = paddle.inference.Config(
+                os.path.join(args.model_path, args.model_filename),
+                os.path.join(args.model_path, args.params_filename))
+        else:
+            model_prefix = args.model_filename.split('.')[0]
+            config = paddle.inference.Config(
+                os.path.join(args.model_path, model_prefix))
         config.switch_ir_debug(True)
         # 适用于ERNIE 3.0-Medium模型
         # config.exp_disable_tensorrt_ops(["elementwise_add"])
@@ -246,8 +250,8 @@ class Predictor(object):
             dynamic_shape_file = os.path.join(args.model_path,
                                               "dynamic_shape.txt")
             if os.path.exists(dynamic_shape_file):
-                config.enable_tuned_tensorrt_dynamic_shape(
-                    dynamic_shape_file, True)
+                config.enable_tuned_tensorrt_dynamic_shape(dynamic_shape_file,
+                                                           True)
                 print("trt set dynamic shape done!")
             else:
                 config.collect_shape_range_info(dynamic_shape_file)

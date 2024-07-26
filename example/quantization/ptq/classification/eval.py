@@ -30,9 +30,14 @@ from ptq import ImageNetValDataset
 
 def eval():
     # create predictor
-    model_file = os.path.join(FLAGS.model_path, FLAGS.model_filename)
-    params_file = os.path.join(FLAGS.model_path, FLAGS.params_filename)
-    config = paddle_infer.Config(model_file, params_file)
+    if '2' in paddle.__version__.split('.')[0]:
+        config = paddle.inference.Config(
+            os.path.join(FLAGS.model_path, FLAGS.model_filename),
+            os.path.join(FLAGS.model_path, FLAGS.params_filename))
+    else:
+        model_prefix = FLAGS.model_filename.split('.')[0]
+        config = paddle.inference.Config(
+            os.path.join(FLAGS.model_path, model_prefix))
     if FLAGS.use_gpu:
         config.enable_use_gpu(1000, 0)
     if not FLAGS.ir_optim:
