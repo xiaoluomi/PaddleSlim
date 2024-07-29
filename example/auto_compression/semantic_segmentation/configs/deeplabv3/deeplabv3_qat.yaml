@@ -1,8 +1,8 @@
 Global:
   reader_config: configs/dataset/cityscapes_1024x512_scale1.0.yml
   model_dir: ./RES-paddle2-Deeplabv3-ResNet50
-  model_filename: model
-  params_filename: params
+  model_filename: model.pdmodel
+  params_filename: model.pdiparams
   batch_size: 4
 
 Distillation:
